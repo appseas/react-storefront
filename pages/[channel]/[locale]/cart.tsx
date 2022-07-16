@@ -8,6 +8,8 @@ import { messages } from "@/components/translations";
 import { usePaths } from "@/lib/paths";
 import { useCheckout } from "@/lib/providers/CheckoutProvider";
 
+const externalCheckoutUrl = process.env.NEXT_PUBLIC_CHECKOUT_URL;
+
 function Cart() {
   const t = useIntl();
   const paths = usePaths();
@@ -20,11 +22,11 @@ function Cart() {
 
   return (
     <>
-      <BaseSeo title="Cart - Saleor Tutorial" />
+      <BaseSeo title="Cart" />
 
       <div className="py-10">
         <header className="mb-4">
-          <div className="max-w-7xl mx-auto px-8">
+          <div className="container px-8">
             <div className="flex justify-between">
               <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
                 {t.formatMessage(messages.cartPageHeader)}
@@ -40,8 +42,8 @@ function Cart() {
           </div>
         </header>
         <main>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto px-8">
-            <section className="col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 md:gap-8 container px-8">
+            <div className="col-span-2">
               <ul className="divide-y divide-gray-200">
                 {isCheckoutLoading ? (
                   <Spinner />
@@ -53,20 +55,30 @@ function Cart() {
                   ))
                 )}
               </ul>
-            </section>
+            </div>
 
             {!!checkout && (
               <div>
                 <CartSummary checkout={checkout} />
                 <div className="mt-12">
-                  <Link href={paths.checkout.$url()} passHref>
+                  {externalCheckoutUrl ? (
                     <a
                       className="block w-full bg-blue-500 border border-transparent rounded-md shadow-sm py-3 px-4 text-center font-medium text-white hover:bg-blue-700"
-                      href="pass"
+                      href={`${externalCheckoutUrl}?checkout=${checkout.id}`}
+                      target="_self"
                     >
                       {t.formatMessage(messages.checkoutButton)}
                     </a>
-                  </Link>
+                  ) : (
+                    <Link href={paths.checkout.$url()} passHref>
+                      <a
+                        className="block w-full bg-blue-500 border border-transparent rounded-md shadow-sm py-3 px-4 text-center font-medium text-md text-white hover:bg-blue-700"
+                        href="pass"
+                      >
+                        {t.formatMessage(messages.checkoutButton)}
+                      </a>
+                    </Link>
+                  )}
                 </div>
               </div>
             )}

@@ -3,15 +3,21 @@ import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from "
 import Custom404 from "pages/404";
 import React, { ReactElement } from "react";
 
-import { Layout, PageHero, ProductCollection } from "@/components";
+import { Layout, PageHero } from "@/components";
+import { FilteredProductList } from "@/components/productList/FilteredProductList";
 import { CollectionPageSeo } from "@/components/seo/CollectionPageSeo";
 import apolloClient from "@/lib/graphql";
+import { mapEdgesToItems } from "@/lib/maps";
 import { contextToRegionQuery } from "@/lib/regions";
-import { collectionPaths } from "@/lib/ssr/collection";
+import { translate } from "@/lib/translations";
 import {
+  AttributeFilterFragment,
   CollectionBySlugDocument,
   CollectionBySlugQuery,
   CollectionBySlugQueryVariables,
+  FilteringAttributesQuery,
+  FilteringAttributesQueryDocument,
+  FilteringAttributesQueryVariables,
 } from "@/saleor/api";
 
 export const getStaticProps = async (context: GetStaticPropsContext) => {
@@ -26,42 +32,65 @@ export const getStaticProps = async (context: GetStaticPropsContext) => {
       ...contextToRegionQuery(context),
     },
   });
+
+  const attributesResponse: ApolloQueryResult<FilteringAttributesQuery> = await apolloClient.query<
+    FilteringAttributesQuery,
+    FilteringAttributesQueryVariables
+  >({
+    query: FilteringAttributesQueryDocument,
+    variables: {
+      ...contextToRegionQuery(context),
+      filter: {
+        inCollection: response.data.collection?.id,
+      },
+    },
+  });
+
+  let attributes: AttributeFilterFragment[] = mapEdgesToItems(attributesResponse.data.attributes);
+  attributes = attributes.filter((attribute) => attribute.choices?.edges.length);
+
   return {
     props: {
       collection: response.data.collection,
+      attributeFiltersData: attributes,
     },
   };
 };
-function CollectionPage({ collection }: InferGetStaticPropsType<typeof getStaticProps>) {
+function CollectionPage({
+  collection,
+  attributeFiltersData,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
   if (!collection) {
     return <Custom404 />;
   }
+
   return (
     <>
       <CollectionPageSeo collection={collection} />
       <header className="mb-4 pt-4">
-        <div className="max-w-7xl mx-auto px-8">
-          <PageHero entity={collection} />
+        <div className="container px-8">
+          <PageHero
+            title={translate(collection, "name")}
+            description={translate(collection, "description") || ""}
+          />
         </div>
       </header>
-      <main>
-        <div className="max-w-7xl mx-auto px-8">
-          <ProductCollection filter={{ collections: [collection?.id] }} />
-        </div>
-      </main>
+      <div className="container px-8 mt-4">
+        <FilteredProductList
+          attributeFiltersData={attributeFiltersData}
+          collectionIDs={[collection.id]}
+        />
+      </div>
     </>
   );
 }
 
 export default CollectionPage;
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const paths = await collectionPaths();
-  return {
-    paths,
-    fallback: "blocking",
-  };
-};
+export const getStaticPaths: GetStaticPaths = () => ({
+  paths: [],
+  fallback: "blocking",
+});
 
 CollectionPage.getLayout = function getLayout(page: ReactElement) {
   return <Layout>{page}</Layout>;

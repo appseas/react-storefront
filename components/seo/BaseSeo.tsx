@@ -1,16 +1,15 @@
 import { NextSeo } from "next-seo";
 
+import { STOREFRONT_NAME } from "@/lib/const";
+
 interface BaseSeoProps {
   title?: string;
   description?: string;
 }
 
 export function BaseSeo({ title, description }: BaseSeoProps) {
-  const baseTitle = "GPAX E-Commerce";
-  const baseDescription = "GPAX E-Commerce, one platform and one stop shop for all of your needs.";
-
-  const seoTitle = title || baseTitle;
-  const seoDescription = description || baseDescription;
+  const seoTitle = title ? `${title} - ${STOREFRONT_NAME}` : STOREFRONT_NAME;
+  const seoDescription = description || "";
 
   return (
     <NextSeo
@@ -22,10 +21,10 @@ export function BaseSeo({ title, description }: BaseSeoProps) {
         images: [
           {
             url: "https://og-image.vercel.app/React%20Storefront.png?theme=light&md=1&fontSize=100px&images=https%3A%2F%2Fassets.vercel.com%2Fimage%2Fupload%2Ffront%2Fassets%2Fdesign%2Fvercel-triangle-black.svg&images=https%3A%2F%2Fsaleor.io%2Fstatic%2Flogo-ad1b99aa7c6f5acf58a61640af760cfd.svg",
-            alt: "GPAX products images",
+            alt: "Hero image",
           },
         ],
-        site_name: "GPAX E-Commerce",
+        site_name: STOREFRONT_NAME,
       }}
     />
   );

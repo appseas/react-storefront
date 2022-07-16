@@ -6,7 +6,6 @@ import { ReactElement } from "react";
 import { Layout, RichText } from "@/components";
 import apolloClient from "@/lib/graphql";
 import { contextToRegionQuery } from "@/lib/regions";
-import { pagePaths } from "@/lib/ssr/page";
 import { translate } from "@/lib/translations";
 import { PageDocument, PageQuery, PageQueryVariables } from "@/saleor/api";
 
@@ -16,13 +15,10 @@ export interface pathParams {
   slug: string;
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const paths = await pagePaths();
-  return {
-    paths,
-    fallback: "blocking",
-  };
-};
+export const getStaticPaths: GetStaticPaths = () => ({
+  paths: [],
+  fallback: "blocking",
+});
 
 export const getStaticProps = async (context: GetStaticPropsContext) => {
   const pageSlug = context.params?.slug?.toString()!;
@@ -50,9 +46,7 @@ function PagePage({ page }: InferGetStaticPropsType<typeof getStaticProps>) {
   const content = translate(page, "content");
 
   return (
-    <main className="max-w-7xl mx-auto pt-8 px-8">
-      {content && <RichText jsonStringData={content} />}
-    </main>
+    <main className="container pt-8 px-8">{content && <RichText jsonStringData={content} />}</main>
   );
 }
 

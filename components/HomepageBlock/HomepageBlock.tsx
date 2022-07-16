@@ -33,15 +33,18 @@ export function HomepageBlock({ menuItem }: HomepageBlockProps) {
     link = paths.collection._slug(menuItem.collection.slug).$url();
   }
   return (
-    <div className="pb-8">
-      <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 pb-4">
+    <div className="pb-8" data-testid="category">
+      <h1
+        className="text-3xl font-extrabold tracking-tight text-gray-900 pb-4"
+        data-testid={`categoryName${menuItem.name}`}
+      >
         {translate(menuItem, "name")}
       </h1>
       <ProductCollection filter={filter} allowMore={false} />
       <div className="flex flex-row-reverse p-4">
         <Link href={link} passHref>
           <a href="pass">
-            <p>{t.formatMessage(messages.more)}</p>
+            <p className="text-base">{t.formatMessage(messages.more)}</p>
           </a>
         </Link>
       </div>

@@ -10,27 +10,30 @@ import { ProductFilterInput } from "@/saleor/api";
 function SearchPage() {
   const t = useIntl();
   const [searchQuery, setSearchQuery] = useQueryState("q");
-  const [debouncedFilter, setDebouncedFilter] = React.useState<ProductFilterInput>({
-    search: searchQuery,
-  });
+  const [debouncedFilter, setDebouncedFilter] = React.useState<ProductFilterInput>({});
 
   useDebounce(
     () => {
-      setDebouncedFilter({ search: searchQuery });
+      if (searchQuery) {
+        setDebouncedFilter({ search: searchQuery });
+      } else {
+        setDebouncedFilter({});
+      }
     },
     1000,
     [searchQuery]
   );
 
   return (
-    <main className="max-w-7xl mx-auto w-full px-8 mt-5">
-      <p className="font-semibold text-2xl mb-5">{t.formatMessage(messages.searchHeader)}</p>
+    <main className="container w-full px-8 mt-5">
+      <p className="font-semibold text-xl mb-5">{t.formatMessage(messages.searchHeader)}</p>
       <input
-        className="md:w-96 mb-10 block border-gray-300 rounded-md shadow-sm sm:text-sm"
+        className="w-full md:w-96 mb-10 block border-gray-300 rounded-md shadow-sm text-md"
         type="text"
         value={searchQuery || ""}
         placeholder={t.formatMessage(messages.searchFieldPlaceholder)}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        onChange={(e) => setSearchQuery(e.target.value, { scroll: false, shallow: true })}
+        data-testid="searchInput"
       />
       <ProductCollection filter={debouncedFilter} />
     </main>
